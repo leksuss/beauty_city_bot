@@ -10,6 +10,7 @@ from globals import (
 )
 
 
+
 def get_markup_client(buttons):
     return quick_markup(buttons, row_width=1)
 
@@ -118,4 +119,6 @@ def get_review(message: telebot.types.Message):
     markup_client = get_markup_client(buttons)
     bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
                           text='Кнопка пока не работает', reply_markup=markup_client)
+
+
 
