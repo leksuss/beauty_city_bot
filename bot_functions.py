@@ -6,7 +6,8 @@ import telebot
 from telebot.util import quick_markup
 from datetime import timedelta
 from globals import (
-    bot, agreement, ACCESS_DUE_TIME, markup_cancel_step, INPUT_DUE_TIME, chats, client_buttons
+    bot, agreement, ACCESS_DUE_TIME, markup_cancel_step, INPUT_DUE_TIME, chats, client_buttons, recording_time,
+
 )
 
 
@@ -22,7 +23,12 @@ def get_client_buttons(buttons, key=None):
             client_buttons.update(button)
     return client_buttons
 
-
+def get_markup_time(recording_time):
+    time_buttons = {}
+    for time in recording_time:
+        button = {time: {'callback_data': f'{time}'}}
+        time_buttons.update(button)
+    return quick_markup(time_buttons, row_width=6)
 
 def start_bot(message: telebot.types.Message):
     tg_name = message.from_user.username
@@ -99,7 +105,7 @@ def get_recording(message: telebot.types.Message):
     buttons = get_client_buttons(client_buttons, 2)
     markup_client = get_markup_client(buttons)
     bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
-                          text='Кнопка не работает', reply_markup=markup_client)
+                          text=f'Кнопка не работает {message.chat.id}', reply_markup=markup_client)
 
 
 def get_contact_details(message: telebot.types.Message):
@@ -115,10 +121,27 @@ def get_contact_details(message: telebot.types.Message):
 
 def get_review(message: telebot.types.Message):
     user = chats[message.chat.id]
-    buttons = get_client_buttons(client_buttons, 4)
+    # buttons = get_client_buttons(client_buttons, 4)
+    markup_time = get_markup_time(recording_time)
+    bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
+                          text='Выберите время', reply_markup=markup_time)
+
+
+
+def get_recording_time(message: telebot.types.Message):
+    user = chats[message.chat.id]
+    buttons = get_client_buttons(client_buttons)
     markup_client = get_markup_client(buttons)
     bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
-                          text='Кнопка пока не работает', reply_markup=markup_client)
+                          text=f'Кнопка пока не работает {message.chat.id}', reply_markup=markup_client)
 
+
+def process_callback_time_button(message: telebot.types.Message, recording_time):
+    user = chats[message.chat.id]
+    buttons = get_client_buttons(client_buttons)
+    markup_client = get_markup_client(buttons)
+
+    bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
+                          text=f'Выбранное время {recording_time}', reply_markup=markup_client)
 
 

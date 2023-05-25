@@ -2,13 +2,15 @@ import datetime as dt
 
 import bot_functions as calls
 
-from datetime import date, timedelta
+
 from globals import (
-    bot, agreement, ACCESS_DUE_TIME, markup_cancel_step, INPUT_DUE_TIME, chats, client_buttons, telebot
+    bot, agreement, ACCESS_DUE_TIME, markup_cancel_step, INPUT_DUE_TIME, chats, client_buttons, telebot, date_now,
+    date_end, recording_time
 )
 from telegram_bot_calendar import LSTEP
 from telegram_bot_calendar.base import DAY
 from telegram_bot_calendar.detailed import DetailedTelegramCalendar
+
 
 
 # general callback functions mapping to callback buttons
@@ -20,14 +22,38 @@ calls_map = {
     'contact_details': calls.get_contact_details,
     'recording': calls.get_recording,
     'review': calls.get_review,
+}
 
+calls_time_map = {
+    '10:00': calls.process_callback_time_button,
+    '10:30': calls.process_callback_time_button,
+    '11:00': calls.process_callback_time_button,
+    '11:30': calls.process_callback_time_button,
+    '12:00': calls.process_callback_time_button,
+    '12:30': calls.process_callback_time_button,
+    '13:00': calls.process_callback_time_button,
+    '13:30': calls.process_callback_time_button,
+    '14:00': calls.process_callback_time_button,
+    '14:30': calls.process_callback_time_button,
+    '15:00': calls.process_callback_time_button,
+    '15:30': calls.process_callback_time_button,
+    '16:00': calls.process_callback_time_button,
+    '16:30': calls.process_callback_time_button,
+    '17:00': calls.process_callback_time_button,
+    '17:30': calls.process_callback_time_button,
+    '18:00': calls.process_callback_time_button,
+    '18:30': calls.process_callback_time_button,
+    '19:00': calls.process_callback_time_button,
+    '19:30': calls.process_callback_time_button,
+    '20:00': calls.process_callback_time_button,
+    '20:30': calls.process_callback_time_button,
+    '21:00': calls.process_callback_time_button,
+    '21:30': calls.process_callback_time_button,
 }
 
 # callback functions mapping to callback buttons
 # for handling particular entity by ID
 # all of these buttons are attached to particular messages
-date_now = date.today()
-date_end = date.today() + timedelta(days=14)
 
 calls_id_map = {
 
@@ -99,6 +125,10 @@ def handle_buttons(call):
         func_name = parts[0]
         calls_id_map[func_name](call.message, key_func)
         return
+    elif call.data in recording_time:
+        calls_time_map[call.data](call.message, call.data)
+
+
     else:
         calls_map[call.data](call.message)
 
