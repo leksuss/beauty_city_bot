@@ -5,7 +5,7 @@ import bot_functions as calls
 
 from globals import (
     bot, agreement, ACCESS_DUE_TIME, markup_cancel_step, INPUT_DUE_TIME, chats, client_buttons, telebot, date_now,
-    date_end, recording_time, chats, markup_recording_time
+    date_end, recording_time, chats, markup_recording_time, shipping_options,
 )
 from telegram_bot_calendar import LSTEP
 from telegram_bot_calendar.base import DAY
@@ -81,6 +81,7 @@ class WMonthTelegramCalendar(DetailedTelegramCalendar):
     first_step = DAY
 
 
+
 @bot.message_handler(commands=['start'])
 def command_start(message: telebot.types.Message):
     calls.start_bot(message)
@@ -139,6 +140,29 @@ def handle_buttons(call):
         calls_time_map[call.data](call.message, call.data)
     else:
         calls_map[call.data](call.message, call.data)
+
+
+@bot.shipping_query_handler(func=lambda query: True)
+def shipping(shipping_query):
+    print(shipping_query)
+    bot.answer_shipping_query(shipping_query.id, ok=True, shipping_options=shipping_options,
+                              error_message='Повторите попытку позже!')
+
+
+@bot.pre_checkout_query_handler(func=lambda query: True)
+def checkout(pre_checkout_query):
+    bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True,
+                                  error_message='Инопланетяне пытались украсть CVV вашей карты, но мы успешно защитили '
+                                                'ваши учетные данные. Попробуй заплатить еще раз через несколько минут, '
+                                                'нам нужен небольшой отдых.')
+
+
+@bot.message_handler(content_types=['successful_payment'])
+def got_payment(message):
+    bot.send_message(chat_id=message.chat.id,
+                     text='Ура! Спасибо за оплату услуги! Ждем Вас в условленное время!',
+                     parse_mode='Markdown')
+    calls.start_bot(message)
 
 
 

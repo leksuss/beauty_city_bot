@@ -4,11 +4,13 @@ from datetime import date, timedelta
 from telebot import types
 from environs import Env
 from telebot.util import quick_markup
+from telebot.types import LabeledPrice, ShippingOption
 
 
 env = Env()
 env.read_env()
 tg_bot_token = env('TG_CLIENTS_TOKEN')
+pay_token = env('PAYMENTS_TOKEN')
 agreement = env('AGREEMENT')
 bot = telebot.TeleBot(token=tg_bot_token)
 
@@ -16,6 +18,12 @@ bot = telebot.TeleBot(token=tg_bot_token)
 INPUT_DUE_TIME = 60     # time (sec) to wait for user text input
 BUTTONS_DUE_TIME = 30   # time (sec) to wait for user clicks button
 ACCESS_DUE_TIME = 300   # if more time has passed since last main menu we should check access again
+
+PRICE = LabeledPrice(label='Услуги салона красоты', amount=1000*100)
+
+shipping_options = [
+    ShippingOption(id='instant', title='WorldWide Teleporter').add_price(LabeledPrice('Teleporter', 1000)),
+    ShippingOption(id='pickup', title='Local pickup').add_price(LabeledPrice('Pickup', 300))]
 
 date_now = date.today()
 date_end = date.today() + timedelta(days=14)

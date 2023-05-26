@@ -4,22 +4,19 @@ import telebot
 
 
 from telebot.util import quick_markup
+from telegram_bot_calendar.base import DAY
+from telegram_bot_calendar.detailed import DetailedTelegramCalendar
 from datetime import timedelta
 from globals import (
     bot, agreement, ACCESS_DUE_TIME, markup_cancel_step, INPUT_DUE_TIME, chats, client_buttons, recording_time,
 code_services, masters, markup_services, markup_recording, date_now, date_end, markup_accept, markup_user_data,
-markup_registration
+markup_registration, pay_token, PRICE
 
 )
 
 
-from telegram_bot_calendar.base import DAY
-from telegram_bot_calendar.detailed import DetailedTelegramCalendar
-
 class WMonthTelegramCalendar(DetailedTelegramCalendar):
     first_step = DAY
-
-
 
 
 def get_markup(buttons):
@@ -256,11 +253,21 @@ def get_registration_pay(message: telebot.types.Message, call):
     buttons = get_client_buttons(client_buttons)
     markup_client = get_markup(buttons)
     bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
-                          text=f'*Запись подтверждена*\n---\n' \
-                               f'*Запись к мастеру {user["master"]}*\n---\n' \
-                               f'Услуга {user["service"]}\n---\n' \
-                               f'Дата посещения салона: {user["date"]}\n' \
-                               f'Время посещения: {user["time"]}\n --- \n' \
-                               f'Адрес: \n г. Алматы, пр. Жибек жолы 999, блок 9, этаж 9 \n '
-                               f'Телефон: +74957777777 \n ', reply_markup=markup_client)
+                          text="Real cards won't work with me, no money will be debited from your account."
+                     " Use this test card number to pay: `4242 4242 4242 4242`"
+                     "\n\nThis is your demo invoice:", parse_mode='Markdown')
+    bot.send_invoice(
+        message.chat.id,
+        title='Услуги салона красоты',
+        description='Оплата услуги салона красоты',
+        provider_token=pay_token,
+        invoice_payload='Оплата услуги салона красоты',
+        currency='rub',
+        prices=[PRICE],
+        photo_url='https://kartinkof.club/uploads/posts/2022-04/1649916854_1-kartinkof-club-p-rzhachnie-kartinki-pricheski-zhenskie-1.jpg',
+        photo_height=512,
+        photo_width=512,
+        photo_size=512,
+        is_flexible=False,  # True If you need to set up Shipping Fee
+        start_parameter='test-invoice-payload')
 
