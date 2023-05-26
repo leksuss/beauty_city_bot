@@ -5,7 +5,7 @@ import bot_functions as calls
 
 from globals import (
     bot, agreement, ACCESS_DUE_TIME, markup_cancel_step, INPUT_DUE_TIME, chats, client_buttons, telebot, date_now,
-    date_end, recording_time
+    date_end, recording_time, chats, markup_recording_time
 )
 from telegram_bot_calendar import LSTEP
 from telegram_bot_calendar.base import DAY
@@ -17,11 +17,28 @@ from telegram_bot_calendar.detailed import DetailedTelegramCalendar
 # all of these buttons are from main user menus
 
 calls_map = {
+    'accept': calls.get_accept,
     'list_of_services': calls.get_list_of_services,
     'information': calls.get_information,
     'contact_details': calls.get_contact_details,
     'recording': calls.get_recording,
     'review': calls.get_review,
+    'all_masters': calls.get_date_of_visit,
+    'master_choice': calls.get_masters,
+    'cancel_step': calls.cancel_step,
+    'cancel_step_accept': calls.cancel_step_accept,
+    'recording_time': calls.get_recording_time,
+    'registration': calls.get_registration,
+    'registration_pay': calls.get_registration_pay,
+    '100': calls.get_service,
+    '101': calls.get_service,
+    '102': calls.get_service,
+    '103': calls.get_service,
+    '104': calls.get_service,
+    '105': calls.get_service,
+    '500': calls.get_date_of_visit,
+    '501': calls.get_date_of_visit,
+    '502': calls.get_date_of_visit,
 }
 
 calls_time_map = {
@@ -56,7 +73,7 @@ calls_time_map = {
 # all of these buttons are attached to particular messages
 
 calls_id_map = {
-
+    'user_data_id': calls.get_user_data_id,
 }
 
 
@@ -69,16 +86,10 @@ def command_start(message: telebot.types.Message):
     calls.start_bot(message)
 
 
-# @bot.message_handler()
-# def get_text(message):
-#     if calls.check_user_in_cache(message):
-#         bot.send_message(message.chat.id, 'Для работы с ботом пользуйтесь кнопками')
-#         calls.start_bot(message)
-
-@bot.message_handler(commands=['calendar'])
-def get_calendar(message):
-    calendar, step = WMonthTelegramCalendar(locale='ru', min_date=date_now, max_date=date_end).build()
-    bot.send_message(message.chat.id, f'Выберите день', reply_markup=calendar)
+@bot.message_handler()
+def get_text(message):
+    if calls.check_user_in_cache(message):
+        bot.delete_message(message.chat.id, message.message_id)
 
 
 @bot.callback_query_handler(func=WMonthTelegramCalendar.func())
@@ -92,7 +103,11 @@ def cal(c):
     elif result:
         bot.edit_message_text(f"Вы выбрали {result}",
                               c.message.chat.id,
-                              c.message.message_id)
+                              c.message.message_id, reply_markup=markup_recording_time)
+    user = chats[c.message.chat.id]
+    user['date'] = result
+
+
 
 
 @bot.callback_query_handler(func=lambda call: call.data)
@@ -108,11 +123,6 @@ def handle_buttons(call):
         bot.send_message(call.message.chat.id, 'Срок действия кнопки истек')
         return
     btn_command: str = call.data
-    current_command = user['callback']
-    if btn_command == 'cancel_step':
-        if current_command:
-            calls.cancel_step(call.message)
-        return
     if user['callback']:
         bot.send_message(call.message.chat.id,
                          f'Вы находитесь в режиме '
@@ -127,10 +137,8 @@ def handle_buttons(call):
         return
     elif call.data in recording_time:
         calls_time_map[call.data](call.message, call.data)
-
-
     else:
-        calls_map[call.data](call.message)
+        calls_map[call.data](call.message, call.data)
 
 
 
