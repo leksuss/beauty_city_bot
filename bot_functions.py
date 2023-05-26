@@ -35,6 +35,7 @@ def get_markup_time(recording_time):
     for time in recording_time:
         button = {time: {'callback_data': f'{time}'}}
         time_buttons.update(button)
+    time_buttons.update({'Назад': {'callback_data': 'all_masters'}})
     return quick_markup(time_buttons, row_width=6)
 
 
