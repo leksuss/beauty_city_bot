@@ -8,6 +8,12 @@ class Procedure(models.Model):
     )
     cost = models.IntegerField('Цена')
 
+    def get_empty_slots(self, date_obj):
+        empty_slots = set()
+        for master in self.masters.all():
+            empty_slots.update(master.get_empty_slots(date_obj))
+        return empty_slots
+
     def __str__(self):
         return self.name
 
@@ -32,8 +38,8 @@ class Master(models.Model):
             masterprocedure__master=self, date=date_obj
         ).values_list('time_slot')
 
-        empty_time_slots = Time.objects.exclude(id__in=appointments)
-        return empty_time_slots
+        empty_slots = Time.objects.exclude(id__in=appointments)
+        return empty_slots
 
     def __str__(self):
         return self.name
@@ -120,9 +126,45 @@ class Appointment(models.Model):
         on_delete=models.CASCADE,
     )
 
+    @classmethod
+    def add_with_master(cls, master, procedure, client, date_obj, time_slot):
+        masterprocedure = MasterProcedure.objects.filter(
+            master=master,
+            procedure=procedure,
+        ).first()
+
+        appointment = cls(
+            client=client,
+            masterprocedure=masterprocedure,
+            date=date_obj,
+            time_slot=time_slot,
+        )
+        appointment.save()
+        return appointment
+
+    @classmethod
+    def add_with_procedure(cls, procedure, client, date_obj, time_slot):
+        master_procedures = MasterProcedure.objects.filter(
+            procedure=procedure,
+        )
+        # get first master with suitable empty slot
+        master_procedure = None
+        for master_procedure in master_procedures:
+            if time_slot in master_procedure.master.get_empty_slots(date_obj):
+                break
+
+        appointment = cls(
+            client=client,
+            masterprocedure=master_procedure,
+            date=date_obj,
+            time_slot=time_slot,
+        )
+        appointment.save()
+        return appointment
+
     def __str__(self):
-        return f'Мастер {self.masterprocedure} \
-        на {self.date}, время {self.time_slot}'
+        return f'Мастер {self.masterprocedure} на {self.date}, ' \
+               f'время {self.time_slot}'
 
     class Meta:
         verbose_name = 'запись'
