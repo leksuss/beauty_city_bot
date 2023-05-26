@@ -27,6 +27,14 @@ class Master(models.Model):
         through='MasterProcedure'
     )
 
+    def get_empty_slots(self, date_obj):
+        appointments = Appointment.objects.filter(
+            masterprocedure__master=self, date=date_obj
+        ).values_list('time_slot')
+
+        empty_time_slots = Time.objects.exclude(id__in=appointments)
+        return empty_time_slots
+
     def __str__(self):
         return self.name
 
@@ -111,7 +119,6 @@ class Appointment(models.Model):
         related_name='appointments',
         on_delete=models.CASCADE,
     )
-
 
     def __str__(self):
         return f'Мастер {self.masterprocedure} \
