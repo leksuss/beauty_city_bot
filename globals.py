@@ -1,7 +1,6 @@
 import telebot
 
 from datetime import date, timedelta
-from telebot import types
 from environs import Env
 from telebot.util import quick_markup
 from telebot.types import LabeledPrice, ShippingOption
