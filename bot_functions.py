@@ -132,12 +132,28 @@ def get_contact_details(message: telebot.types.Message, call):
                                'Запись проходит в онлайн режиме.', reply_markup=markup_client)
 
 
-def get_review(message: telebot.types.Message, call):
+def get_review(message: telebot.types.Message, order_id, step=0):
     user = chats[message.chat.id]
-    buttons = get_client_buttons(client_buttons, 3)
-    markup_client = get_markup(buttons)
-    bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
-                          text=f'Кнопка пока не работает {message.chat.id}', reply_markup=markup_client)
+    if step == 0:
+        msg = bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
+                                    text=f'Введите отзыв ', reply_markup=markup_cancel_step)
+        user['callback_source'] = [msg.id]
+        bot.register_next_step_handler(message, get_review, order_id, 1)
+        user['step_due'] = dt.datetime.now() + dt.timedelta(0, INPUT_DUE_TIME)
+    elif user['step_due'] < dt.datetime.now():
+        bot.send_message(message.chat.id, 'Время ввода данных истекло')
+        cancel_step(message)
+        return
+    elif step == 1:
+        user['text'] = message.text
+        buttons = get_client_buttons(client_buttons)
+        markup_client = get_markup(buttons)
+        bot.delete_message(message.chat.id, message.message_id)
+        bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
+                                    text=f'Cпасибо за Ваш отзыв!',
+                                    reply_markup=markup_client)
+        user['callback'] = None
+        user['callback_source'] = []
 
 
 def get_recording(message: telebot.types.Message, call):
@@ -250,8 +266,6 @@ def get_registration(message: telebot.types.Message, call):
 def get_registration_pay(message: telebot.types.Message, call):
     user = chats[message.chat.id]
     user['agreement'] = True
-    buttons = get_client_buttons(client_buttons)
-    markup_client = get_markup(buttons)
     bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
                           text="Real cards won't work with me, no money will be debited from your account."
                      " Use this test card number to pay: `4242 4242 4242 4242`"
