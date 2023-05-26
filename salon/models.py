@@ -1,10 +1,30 @@
 from django.db import models
 
 
+class Procedure(models.Model):
+    name = models.CharField(
+        'Название процедуры',
+        max_length=100,
+    )
+    cost = models.IntegerField('Цена')
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = 'процедура'
+        verbose_name_plural = 'Процедуры'
+
 class Master(models.Model):
     name = models.CharField(
         'Имя мастера',
         max_length=100,
+    )
+
+    procedures = models.ManyToManyField(
+        Procedure,
+        related_name='masters',
+        through='MasterProcedure'
     )
 
     def __str__(self):
@@ -15,24 +35,24 @@ class Master(models.Model):
         verbose_name_plural = 'Мастера'
 
 
-class Procedure(models.Model):
-    name = models.CharField(
-        'Название процедуры',
-        max_length=100,
-    )
-    cost = models.IntegerField('Цена')
-    master = models.ManyToManyField(
+class MasterProcedure(models.Model):
+    master = models.ForeignKey(
         Master,
         verbose_name='Мастер',
-        related_name='procedures',
+        on_delete=models.CASCADE,
+    )
+    procedure = models.ForeignKey(
+        Procedure,
+        verbose_name='Процедура',
+        on_delete=models.CASCADE,
     )
 
     def __str__(self):
-        return self.name
+        return f'{self.master}, {self.procedure}'
 
     class Meta:
-        verbose_name = 'процедура'
-        verbose_name_plural = 'Процедуры'
+        verbose_name = 'процедуры мастера'
+        verbose_name_plural = 'процедуры мастеров'
 
 
 class Client(models.Model):
@@ -78,15 +98,9 @@ class Appointment(models.Model):
         related_name='appointments',
         on_delete=models.CASCADE,
     )
-    procedure = models.ForeignKey(
-        Procedure,
-        verbose_name='Процедура',
-        related_name='appointments',
-        on_delete=models.CASCADE,
-    )
-    master = models.ForeignKey(
-        Master,
-        verbose_name='Мастер',
+    masterprocedure = models.ForeignKey(
+        MasterProcedure,
+        verbose_name='Мастер с процедурой',
         related_name='appointments',
         on_delete=models.CASCADE,
     )
@@ -98,8 +112,9 @@ class Appointment(models.Model):
         on_delete=models.CASCADE,
     )
 
+
     def __str__(self):
-        return f'{self.procedure}, мастер {self.master} \
+        return f'Мастер {self.masterprocedure} \
         на {self.date}, время {self.time_slot}'
 
     class Meta:
