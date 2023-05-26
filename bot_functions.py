@@ -284,4 +284,3 @@ def get_registration_pay(message: telebot.types.Message, call):
         photo_size=512,
         is_flexible=False,  # True If you need to set up Shipping Fee
         start_parameter='test-invoice-payload')
-
