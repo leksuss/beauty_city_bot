@@ -109,8 +109,6 @@ def cal(c):
     user['date'] = result
 
 
-
-
 @bot.callback_query_handler(func=lambda call: call.data)
 def handle_buttons(call):
     user = calls.check_user_in_cache(call.message)
@@ -165,5 +163,4 @@ def got_payment(message):
     calls.start_bot(message)
 
 
-
-bot.polling(none_stop=True, interval=0)
+bot.polling(none_stop=True, interval=1)

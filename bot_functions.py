@@ -35,6 +35,7 @@ def get_markup_time(recording_time):
     for time in recording_time:
         button = {time: {'callback_data': f'{time}'}}
         time_buttons.update(button)
+    time_buttons.update({'Назад': {'callback_data': 'all_masters'}})
     return quick_markup(time_buttons, row_width=6)
 
 
@@ -141,8 +142,7 @@ def get_review(message: telebot.types.Message, order_id, step=0):
         bot.register_next_step_handler(message, get_review, order_id, 1)
         user['step_due'] = dt.datetime.now() + dt.timedelta(0, INPUT_DUE_TIME)
     elif user['step_due'] < dt.datetime.now():
-        bot.send_message(message.chat.id, 'Время ввода данных истекло')
-        cancel_step(message)
+        bot.send_message(message.chat.id, 'Время ввода данных истекло. Нажмите /start')
         return
     elif step == 1:
         user['text'] = message.text
@@ -213,8 +213,7 @@ def get_user_data_id(message: telebot.types.Message, order_id, step=0):
         bot.register_next_step_handler(message, get_user_data_id, order_id, 1)
         user['step_due'] = dt.datetime.now() + dt.timedelta(0, INPUT_DUE_TIME)
     elif user['step_due'] < dt.datetime.now():
-        bot.send_message(message.chat.id, 'Время ввода данных истекло')
-        cancel_step(message)
+        bot.send_message(message.chat.id, 'Время ввода данных истекло. Нажмите /start')
         return
     elif step == 1:
         user['name'] = message.text
@@ -244,7 +243,7 @@ def get_accept(message: telebot.types.Message, call):
                           text=f'*Запись к мастеру {user["master"]}*\n---\n' \
                                f'Услуга {user["service"]}\n---\n' \
                                f'Дата посещения салона: {user["date"]}\n' \
-                               f'Время посещения: {user["time"]}\n --- \n' , reply_markup=markup_registration)
+                               f'Время посещения: {user["time"]}\n --- \n', reply_markup=markup_registration)
 
 def get_registration(message: telebot.types.Message, call):
     user = chats[message.chat.id]
