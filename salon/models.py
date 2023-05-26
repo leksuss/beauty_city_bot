@@ -99,7 +99,8 @@ class Appointment(models.Model):
     )
 
     def __str__(self):
-        return f'{self.procedure}, мастер {self.master} на {self.date} {self.time_slot}'
+        return f'{self.procedure}, мастер {self.master} \
+        на {self.date}, время {self.time_slot}'
 
     class Meta:
         verbose_name = 'запись'
