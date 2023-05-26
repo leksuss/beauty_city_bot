@@ -88,7 +88,7 @@ markup_recording_time = quick_markup({
 }, row_width=1)
 
 markup_user_data = quick_markup({
-    'Ввести данные': {'callback_data': 'user_data_id'},
+    'Введите ваши данные': {'callback_data': 'user_data_id'},
     'Отмена': {'callback_data': 'cancel_step'},
 }, row_width=1)
 
