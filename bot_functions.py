@@ -177,7 +177,6 @@ def get_masters(message: telebot.types.Message, call):
             name = masters[master_id]['name']
             buttons.update({name: {'callback_data': master_id}})
     buttons.update({'Отмена': {'callback_data': 'cancel_step'}})
-    print(buttons)
     markup_masters = get_markup(buttons)
     bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
                           text=f'Выберите мастера', reply_markup=markup_masters)
@@ -267,9 +266,10 @@ def get_registration_pay(message: telebot.types.Message, call):
     user = chats[message.chat.id]
     user['agreement'] = True
     bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
-                          text="Real cards won't work with me, no money will be debited from your account."
-                     " Use this test card number to pay: `4242 4242 4242 4242`"
-                     "\n\nThis is your demo invoice:", parse_mode='Markdown')
+                          text="Со мной не будут работать настоящие карты, никакие деньги не будут списаны с вашего счета."
+                     " Используйте этот номер тестовой карты для оплаты: `4242 4242 4242 4242`"
+                     "\n\nДля отмены платежа нажмите кнопку /start"
+                     "\n\nЭто ваш демонстрационный счет:", parse_mode='Markdown')
     bot.send_invoice(
         message.chat.id,
         title='Услуги салона красоты',
