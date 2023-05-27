@@ -3,7 +3,15 @@ from django.contrib import admin
 from django.contrib.auth.models import User
 from django.contrib.auth.models import Group
 
-from .models import Master, Procedure, Appointment, Time, Client, MasterProcedure
+from .models import (
+    Master,
+    Procedure,
+    Appointment,
+    Time,
+    Client,
+    MasterProcedure,
+    Review,
+)
 
 admin.site.unregister(User)
 admin.site.unregister(Group)
@@ -35,3 +43,4 @@ class ProcedureAdmin(admin.ModelAdmin):
 admin.site.register(Appointment)
 admin.site.register(Time)
 admin.site.register(Client)
+admin.site.register(Review)

@@ -169,3 +169,22 @@ class Appointment(models.Model):
     class Meta:
         verbose_name = 'запись'
         verbose_name_plural = 'Записи на процедуры'
+
+
+class Review(models.Model):
+    client = models.ForeignKey(
+        Client,
+        verbose_name='Клиент',
+        related_name='reviews',
+        on_delete=models.CASCADE,
+    )
+    text = models.TextField(
+        'Отзыв',
+    )
+
+    def __str__(self):
+        return f'Отзыв клиента {self.client}'
+
+    class Meta:
+        verbose_name = 'отзыв'
+        verbose_name_plural = 'Отзывы'
