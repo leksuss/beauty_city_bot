@@ -182,6 +182,15 @@ class Review(models.Model):
         'Отзыв',
     )
 
+    @classmethod
+    def add_comment(cls, client, text):
+        comment = cls(
+            client=client,
+            text=text
+        )
+        comment.save()
+        return comment
+
     def __str__(self):
         return f'Отзыв клиента {self.client}'
 

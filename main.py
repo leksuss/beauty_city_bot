@@ -1,16 +1,31 @@
 import datetime as dt
 
 import bot_functions as calls
-
+import db
 
 from globals import (
-    bot, agreement, ACCESS_DUE_TIME, markup_cancel_step, INPUT_DUE_TIME, chats, client_buttons, telebot, date_now,
-    date_end, recording_time, chats, markup_recording_time, shipping_options,
+    bot, telebot, date_now,
+    date_end, chats, markup_recording_time,
 )
+from bot_functions import code_services, shipping_options
 from telegram_bot_calendar import LSTEP
 from telegram_bot_calendar.base import DAY
 from telegram_bot_calendar.detailed import DetailedTelegramCalendar
 
+
+func_service = calls.get_service
+func_time_slots = calls.process_callback_time_button
+func_date_of_visit = calls.get_date_of_visit
+procedures = db.get_procedures()
+time_slots = db.get_time_slot()
+masters = db.get_all_masters()[0]
+code_masters = db.get_all_masters()[1]
+calls_procedure = db.get_calls(procedures, func_service)
+calls_time_map = db.get_calls(time_slots, func_time_slots)
+calls_masters_map = db.get_calls(masters, func_date_of_visit)
+
+
+print(code_masters)
 
 
 # general callback functions mapping to callback buttons
@@ -24,49 +39,15 @@ calls_map = {
     'recording': calls.get_recording,
     'review': calls.get_review,
     'all_masters': calls.get_date_of_visit,
-    'master_choice': calls.get_masters,
+    'master_choice': calls.get_master_buttons,
     'cancel_step': calls.cancel_step,
     'cancel_step_accept': calls.cancel_step_accept,
     'recording_time': calls.get_recording_time,
     'registration': calls.get_registration,
     'registration_pay': calls.get_registration_pay,
-    '100': calls.get_service,
-    '101': calls.get_service,
-    '102': calls.get_service,
-    '103': calls.get_service,
-    '104': calls.get_service,
-    '105': calls.get_service,
-    '500': calls.get_date_of_visit,
-    '501': calls.get_date_of_visit,
-    '502': calls.get_date_of_visit,
 }
 
-calls_time_map = {
-    '10:00': calls.process_callback_time_button,
-    '10:30': calls.process_callback_time_button,
-    '11:00': calls.process_callback_time_button,
-    '11:30': calls.process_callback_time_button,
-    '12:00': calls.process_callback_time_button,
-    '12:30': calls.process_callback_time_button,
-    '13:00': calls.process_callback_time_button,
-    '13:30': calls.process_callback_time_button,
-    '14:00': calls.process_callback_time_button,
-    '14:30': calls.process_callback_time_button,
-    '15:00': calls.process_callback_time_button,
-    '15:30': calls.process_callback_time_button,
-    '16:00': calls.process_callback_time_button,
-    '16:30': calls.process_callback_time_button,
-    '17:00': calls.process_callback_time_button,
-    '17:30': calls.process_callback_time_button,
-    '18:00': calls.process_callback_time_button,
-    '18:30': calls.process_callback_time_button,
-    '19:00': calls.process_callback_time_button,
-    '19:30': calls.process_callback_time_button,
-    '20:00': calls.process_callback_time_button,
-    '20:30': calls.process_callback_time_button,
-    '21:00': calls.process_callback_time_button,
-    '21:30': calls.process_callback_time_button,
-}
+
 
 # callback functions mapping to callback buttons
 # for handling particular entity by ID
@@ -134,8 +115,12 @@ def handle_buttons(call):
         func_name = parts[0]
         calls_id_map[func_name](call.message, key_func)
         return
-    elif call.data in recording_time:
+    elif call.data in user['last_msg']:
         calls_time_map[call.data](call.message, call.data)
+    elif call.data in code_services:
+        calls_procedure[call.data](call.message, call.data)
+    elif call.data in code_masters:
+        calls_masters_map[call.data](call.message, call.data)
     else:
         calls_map[call.data](call.message, call.data)
 
@@ -157,10 +142,7 @@ def checkout(pre_checkout_query):
 
 @bot.message_handler(content_types=['successful_payment'])
 def got_payment(message):
-    bot.send_message(chat_id=message.chat.id,
-                     text='Ура! Спасибо за оплату услуги! Ждем Вас в условленное время!',
-                     parse_mode='Markdown')
-    calls.start_bot(message)
+    calls.get_registration(message)
 
 
 bot.polling(none_stop=True, interval=1)

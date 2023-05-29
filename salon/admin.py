@@ -20,6 +20,7 @@ class MasterProcedureInline(admin.TabularInline):
     model = MasterProcedure
     extra = 1
 
+
 @admin.register(Master)
 class MasterAdmin(admin.ModelAdmin):
     list_display = ('name', 'get_procedures')
@@ -28,6 +29,12 @@ class MasterAdmin(admin.ModelAdmin):
     @admin.display(description='Процедуры')
     def get_procedures(self, obj):
         return [procedure.name for procedure in obj.procedures.all()]
+
+
+@admin.register(Appointment)
+class AppointmentAdmin(admin.ModelAdmin):
+    list_display = ('client', 'masterprocedure', 'date', 'time_slot')
+    list_filter = ('client', 'masterprocedure', 'date', 'time_slot')
 
 
 @admin.register(Procedure)
@@ -40,7 +47,7 @@ class ProcedureAdmin(admin.ModelAdmin):
         return [master.name for master in obj.masters.all()]
 
 
-admin.site.register(Appointment)
+# admin.site.register(Appointment)
 admin.site.register(Time)
 admin.site.register(Client)
 admin.site.register(Review)

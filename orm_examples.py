@@ -12,6 +12,7 @@ from salon.models import Master, Procedure, Appointment, Time, Client, MasterPro
 ####
 # Список процедур
 procedures = Procedure.objects.all()
+print(procedures)
 ####
 
 ####
@@ -49,8 +50,10 @@ empty_slots_for_procedure = procedure.get_empty_slots(date_object)
 # Записываемся к мастеру
 ####
 # получаем юзернейм в телеге
-username = 'imleksus'
+username = 'viktoria'
 client = Client.objects.get(tg_username=username)
+print(client)
+
 # клиент выбрал процедуру
 procedure_id = 2
 # по его id получаем объект процедуры
@@ -91,3 +94,5 @@ time_slot = Time.objects.get(pk=time_slot_id)
 # при этом у нас не может быть, что на это время нет свободных мастеров,
 # т.к. мы до этого выбрали свободный слот, где точно есть запись.
 appointment_with_procedure = Appointment.add_with_procedure(procedure, client, date_object, time_slot)
+
+
