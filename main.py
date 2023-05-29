@@ -7,7 +7,7 @@ from globals import (
     bot, telebot, date_now,
     date_end, chats, markup_recording_time,
 )
-from bot_functions import code_services, shipping_options
+from bot_functions import shipping_options
 from telegram_bot_calendar import LSTEP
 from telegram_bot_calendar.base import DAY
 from telegram_bot_calendar.detailed import DetailedTelegramCalendar
@@ -16,17 +16,12 @@ from telegram_bot_calendar.detailed import DetailedTelegramCalendar
 func_service = calls.get_service
 func_time_slots = calls.process_callback_time_button
 func_date_of_visit = calls.get_date_of_visit
-procedures = db.get_procedures()
 time_slots = db.get_time_slot()
 masters = db.get_all_masters()[0]
 code_masters = db.get_all_masters()[1]
-calls_procedure = db.get_calls(procedures, func_service)
 calls_time_map = db.get_calls(time_slots, func_time_slots)
 calls_masters_map = db.get_calls(masters, func_date_of_visit)
-
-
-print(code_masters)
-
+code_services = db.get_data_procedures()[0]
 
 # general callback functions mapping to callback buttons
 # all of these buttons are from main user menus
@@ -117,7 +112,9 @@ def handle_buttons(call):
         return
     elif call.data in user['last_msg']:
         calls_time_map[call.data](call.message, call.data)
-    elif call.data in code_services:
+    elif call.data in user['code_services']:
+        procedures = db.get_procedures()
+        calls_procedure = db.get_calls(procedures, func_service)
         calls_procedure[call.data](call.message, call.data)
     elif call.data in code_masters:
         calls_masters_map[call.data](call.message, call.data)

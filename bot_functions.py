@@ -15,8 +15,6 @@ markup_registration, pay_token
 from db import procedure_id, master_id
 
 
-data_procedures = db.get_data_procedures()
-code_services = data_procedures[0]
 
 shipping_options = [
     ShippingOption(id='instant', title='WorldWide Teleporter').add_price(LabeledPrice('Teleporter', 1000)),
@@ -55,6 +53,7 @@ def start_bot(message: telebot.types.Message):
     chats[message.chat.id] = {
         'callback': None,  # current callback button
         'last_msg': [],  # последние отправленные за один раз сообщения (для подчистки кнопок) -- перспектива
+        'code_services': [],
         'callback_source': [],  # если задан, колбэк кнопки будут обрабатываться только с этих сообщений
         'access_due': access_due,  # дата и время актуальности кэшированного статуса
         'name': None,
@@ -114,10 +113,11 @@ def get_list_of_services(message: telebot.types.Message, call):
     user = chats[message.chat.id]
     buttons = get_client_buttons(client_buttons, 0)
     markup_client = get_markup(buttons)
-    service_text = data_procedures[2]
+    service_text = db.get_data_procedures()[2]
     text = service_text
     bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
                           text=text, reply_markup=markup_client)
+
 
 
 def get_information(message: telebot.types.Message, call):
@@ -168,8 +168,10 @@ def get_review(message: telebot.types.Message, order_id, step=0):
 
 def get_recording(message: telebot.types.Message, call):
     user = chats[message.chat.id]
-    service_buttons = data_procedures[1]
+    service_buttons = db.get_data_procedures()[1]
     markup_services = get_markup(service_buttons)
+    code_services = db.get_data_procedures()[0]
+    user['code_services'] = code_services
     bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
         text=f'Выберите услугу', reply_markup=markup_services)
 
