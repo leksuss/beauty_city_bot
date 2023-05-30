@@ -7,18 +7,17 @@ from telebot.util import quick_markup
 from telebot.types import LabeledPrice, ShippingOption
 from telegram_bot_calendar.base import DAY
 from telegram_bot_calendar.detailed import DetailedTelegramCalendar
-from globals import (
-    bot, agreement, ACCESS_DUE_TIME, markup_cancel_step, INPUT_DUE_TIME, chats, client_buttons,
-markup_recording, date_now, date_end, markup_accept, markup_user_data,
-markup_registration, pay_token
-)
 from db import procedure_id, master_id
-
+from globals import (
+bot, agreement, ACCESS_DUE_TIME, markup_cancel_step, INPUT_DUE_TIME, chats, client_buttons, markup_recording, date_now,
+date_end, markup_accept, markup_user_data, markup_registration, pay_token
+)
 
 
 shipping_options = [
     ShippingOption(id='instant', title='WorldWide Teleporter').add_price(LabeledPrice('Teleporter', 1000)),
     ShippingOption(id='pickup', title='Local pickup').add_price(LabeledPrice('Pickup', 300))]
+
 
 class WMonthTelegramCalendar(DetailedTelegramCalendar):
     first_step = DAY
@@ -34,6 +33,7 @@ def get_client_buttons(buttons, key=None):
         if index != key:
             client_buttons.update(button)
     return client_buttons
+
 
 def get_markup_time(recording_time):
     time_buttons = {}
@@ -54,6 +54,7 @@ def start_bot(message: telebot.types.Message):
         'callback': None,  # current callback button
         'last_msg': [],  # последние отправленные за один раз сообщения (для подчистки кнопок) -- перспектива
         'code_services': [],
+        'code_masters': [],
         'callback_source': [],  # если задан, колбэк кнопки будут обрабатываться только с этих сообщений
         'access_due': access_due,  # дата и время актуальности кэшированного статуса
         'name': None,
@@ -86,8 +87,7 @@ def check_user_in_cache(msg: telebot.types.Message):
     user = chats.get(msg.chat.id)
     if not user:
         bot.send_message(msg.chat.id, 'Упс. Что то пошло не так.\n'
-                                      'Начнем с главного меню')
-        start_bot(msg)
+                                      'Нажмите /start')
         return None
     else:
         return user
@@ -109,6 +109,7 @@ def cancel_step_accept(message: telebot.types.Message, call):
     bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
                           text='Действие отменено', reply_markup=markup_client)
 
+
 def get_list_of_services(message: telebot.types.Message, call):
     user = chats[message.chat.id]
     buttons = get_client_buttons(client_buttons, 0)
@@ -117,7 +118,6 @@ def get_list_of_services(message: telebot.types.Message, call):
     text = service_text
     bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
                           text=text, reply_markup=markup_client)
-
 
 
 def get_information(message: telebot.types.Message, call):
@@ -187,17 +187,15 @@ def get_master_buttons(message: telebot.types.Message, call):
     user = chats[message.chat.id]
     id = int(user['service_id'])
     buttons = {}
-    masters = db.get_masters(id)
+    masters = db.get_masters(id)[0]
+    user['code_masters'] = db.get_masters(id)[1]
     for master_id in masters:
         name = masters[master_id]['name']
         buttons.update({name: {'callback_data': master_id}})
     buttons.update({'Отмена': {'callback_data': 'cancel_step'}})
     markup_masters = get_markup(buttons)
-    print(markup_masters)
     bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
                           text=f'Выберите мастера', reply_markup=markup_masters)
-
-
 
 
 def get_date_of_visit(message: telebot.types.Message, call):
@@ -219,7 +217,6 @@ def get_recording_time(message: telebot.types.Message, call):
     for time in time_slots:
         recording_time.append(str(time))
     user['last_msg'] = recording_time
-    print(user['last_msg'])
     markup_time = get_markup_time(recording_time)
     bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
                           text='Выберите время', reply_markup=markup_time)
@@ -230,6 +227,7 @@ def process_callback_time_button(message: telebot.types.Message, recording_time)
     user['time'] = recording_time
     bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
                           text=f'Выбранное время {recording_time}', reply_markup=markup_user_data)
+
 
 def get_user_data_id(message: telebot.types.Message, order_id, step=0):
     user = chats[message.chat.id]
@@ -265,12 +263,10 @@ def get_user_data_id(message: telebot.types.Message, order_id, step=0):
 def get_accept(message: telebot.types.Message, call):
     user = chats[message.chat.id]
     user['agreement'] = True
-    masters = db.get_all_masters()[0]
-    print(masters)
+    masters = db.get_masters(user['service_id'])[0]
     procedures = db.get_procedures()
     if user['master_id']:
         id = master_id + int(user['master_id'])
-        print(id)
         user['master'] = masters[f'{id}']['name']
     else:
         user['master'] = 'Свободному'
@@ -284,6 +280,7 @@ def get_accept(message: telebot.types.Message, call):
                                f'Дата посещения салона: {user["date"]}\n' \
                                f'Время посещения: {user["time"]}\n --- \n', reply_markup=markup_registration)
     user['master'] = None
+
 
 def get_registration(message: telebot.types.Message, call):
     user = chats[message.chat.id]
@@ -304,9 +301,6 @@ def get_registration(message: telebot.types.Message, call):
                      parse_mode='Markdown', reply_markup=markup_client)
     chats[message.chat.id]['msg_id_2'] = msg.id
     db.add_appointment(user["service_id"], user['tg_name'], user["date"], user["time"], user["master"])
-
-
-
 
 
 def get_registration_pay(message: telebot.types.Message, call):

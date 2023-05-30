@@ -17,11 +17,7 @@ func_service = calls.get_service
 func_time_slots = calls.process_callback_time_button
 func_date_of_visit = calls.get_date_of_visit
 time_slots = db.get_time_slot()
-masters = db.get_all_masters()[0]
-code_masters = db.get_all_masters()[1]
 calls_time_map = db.get_calls(time_slots, func_time_slots)
-calls_masters_map = db.get_calls(masters, func_date_of_visit)
-code_services = db.get_data_procedures()[0]
 
 # general callback functions mapping to callback buttons
 # all of these buttons are from main user menus
@@ -42,8 +38,6 @@ calls_map = {
     'registration_pay': calls.get_registration_pay,
 }
 
-
-
 # callback functions mapping to callback buttons
 # for handling particular entity by ID
 # all of these buttons are attached to particular messages
@@ -55,7 +49,6 @@ calls_id_map = {
 
 class WMonthTelegramCalendar(DetailedTelegramCalendar):
     first_step = DAY
-
 
 
 @bot.message_handler(commands=['start'])
@@ -95,7 +88,7 @@ def handle_buttons(call):
         bot.send_message(call.message.chat.id, 'Кнопка не актуальна')
         return
     elif (dt.datetime.now()-dt.timedelta(0, 180)) > dt.datetime.fromtimestamp(call.message.date):
-        bot.send_message(call.message.chat.id, 'Срок действия кнопки истек')
+        bot.send_message(call.message.chat.id, 'Срок действия кнопок истек. Нажмите /start и начните заново')
         return
     btn_command: str = call.data
     if user['callback']:
@@ -116,7 +109,9 @@ def handle_buttons(call):
         procedures = db.get_procedures()
         calls_procedure = db.get_calls(procedures, func_service)
         calls_procedure[call.data](call.message, call.data)
-    elif call.data in code_masters:
+    elif call.data in user['code_masters']:
+        masters = db.get_masters(user['service_id'])[0]
+        calls_masters_map = db.get_calls(masters, func_date_of_visit)
         calls_masters_map[call.data](call.message, call.data)
     else:
         calls_map[call.data](call.message, call.data)
@@ -139,7 +134,7 @@ def checkout(pre_checkout_query):
 
 @bot.message_handler(content_types=['successful_payment'])
 def got_payment(message):
-    calls.get_registration(message)
+    calls.get_registration(message, 1)
 
 
 bot.polling(none_stop=True, interval=1)

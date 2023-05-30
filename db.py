@@ -1,8 +1,6 @@
 import os, sys
 
 import django
-
-
 DJANGO_PROJECT_PATH = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
 sys.path.append(DJANGO_PROJECT_PATH)
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "beauty_city_bot.settings")
@@ -13,7 +11,6 @@ from salon.models import Master, Procedure, Appointment, Time, Client, Review
 
 procedure_id = 100
 master_id = 500
-
 
 
 def get_procedures():
@@ -47,25 +44,12 @@ def get_masters(call):
     procedure = Procedure.objects.get(pk=call)
     masters_db = procedure.masters.all()
     masters = {}
+    code_masters = []
     for master_db in masters_db:
         master = {f'{master_id + master_db.id}':
            {
                 'name': master_db.name,
            }
-        }
-        masters.update(master)
-    return masters
-
-
-def get_all_masters():
-    masters_db = Master.objects.all()
-    masters = {}
-    code_masters = []
-    for master_db in masters_db:
-        master = {f'{master_id + master_db.id}':
-            {
-                'name': master_db.name,
-            }
         }
         masters.update(master)
         code_masters.append(f'{master_id + master_db.id}')

@@ -23,10 +23,9 @@ date_now = date.today()
 date_end = date.today() + timedelta(days=14)
 
 chats = {}
-
-# main menu callback buttons
 time_buttons = {}
 
+# main menu callback buttons
 client_buttons = [
     {'Список услуг': {'callback_data': 'list_of_services'}},
     {'О нас': {'callback_data': 'information'}},
@@ -38,8 +37,6 @@ client_buttons = [
 markup_cancel_step = quick_markup({
     'Отмена': {'callback_data': 'cancel_step'},
   })
-
-
 
 markup_recording = quick_markup({
     'К свободному мастеру': {'callback_data': 'all_masters'},
