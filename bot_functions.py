@@ -23,8 +23,8 @@ class WMonthTelegramCalendar(DetailedTelegramCalendar):
     first_step = DAY
 
 
-def get_markup(buttons):
-    return quick_markup(buttons, row_width=1)
+def get_markup(buttons, row_width=1):
+    return quick_markup(buttons, row_width=row_width)
 
 
 def get_client_buttons(buttons, key=None):
@@ -253,7 +253,7 @@ def get_user_data_id(message: telebot.types.Message, order_id, step=0):
         bot.delete_message(message.chat.id, message.message_id)
         bot.edit_message_text(chat_id=message.chat.id, message_id=user['msg_id_2'],
                                     text='Ознакомьтесь с согласием на обработку персональных данных. '
-                                         'При согласии введите "Принять" или нажмите кнопку отмены.',
+                                         'При согласии нажмите "Принять" или кнопку отмены.',
                                     )
         bot.send_document(message.chat.id, open(agreement, 'rb'), reply_markup=markup_accept)
         user['callback'] = None
@@ -267,6 +267,8 @@ def get_accept(message: telebot.types.Message, call):
     procedures = db.get_procedures()
     if user['master_id']:
         id = master_id + int(user['master_id'])
+        print(masters[f'{id}']['name'])
+        print(masters)
         user['master'] = masters[f'{id}']['name']
     else:
         user['master'] = 'Свободному'

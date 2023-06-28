@@ -32,6 +32,7 @@ client_buttons = [
     {'Контактные данные': {'callback_data': 'contact_details'}},
     {'Оставить отзыв': {'callback_data': 'review'}},
     {'Хочу записаться': {'callback_data': 'recording'}},
+
 ]
 
 markup_cancel_step = quick_markup({
